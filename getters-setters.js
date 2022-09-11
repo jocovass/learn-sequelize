@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { Sequelize, DataTypes } = require("sequelize");
+const { Sequelize, DataTypes, QueryTypes } = require("sequelize");
 
 // connect to the databes two different method
 // const seqInstance = new Sequelize("postgresql://localhost:5432/joco");
@@ -87,3 +87,62 @@ const User = seqInstance.define(
 // Validate function can be called at this level before we try to save the data into the DB
 // const newUser = User.build({ name: 'Jozsef', email: 'joco.udv' });
 // newUser.validate();
+
+// Making raw SQL query with sequelize
+// const data = await seqInstance.query(
+//   `UPDATE users SET age = 54 WHERE username = 'WittCo'`
+// );
+// const [result, metadata] = data;
+
+// This won't return metadata only the result becuase we told SQL that this is a select operation
+// const data = await seqInstance.query(`SELECT * FROM user`, {
+//   type: QueryTypes.SELECT, // UPDATE and more
+// });
+
+// The returned data will be instace of the User model, things like .toJSON() method will be
+// available on the instance object, and manny more data like isNew and so on.
+// const data = await seqInstance.query(`SELECT * FROM user`, {
+//   instance: User,
+//   plain: true, // will make it so that only return one result (I think?)
+//   logging: myFunction, // we can log some extra information while querying data
+// });
+
+// function myFunction() {
+//   console.log("RUNNING SQL STATEMENT");
+// }
+
+////////////////
+/////////// SQL injection
+////////////////
+// Replacements are escaped by sequelize which helps to prevent injections
+await seqInstance.query(
+  `SELECT username FROM users WHERE username = ? AND password = ?`,
+  { replacements: [username, password] }
+);
+
+await seqInstance.query(`SELECT username FROM users WHERE :username`, {
+  replacements: { username: "Jozsi" },
+});
+
+await seqInstance.query(`SELECT username FROM users WHERE IN(:username)`, {
+  replacements: { username: ["Jozsi", "Nora"] },
+});
+
+// % wilde card, it will match every users that starts with Jo
+await seqInstance.query(`SELECT username FROM users WHERE :username`, {
+  replacements: { username: "Jo%" },
+});
+
+// Bind parameters
+// bind params can't be SQL tables or column name, SQL keywords
+// all data passed to the bind prop must be used in the SQL query otherwise it will throw an error
+// with postgres we might have to type cast the input '12'::integer to the number 12
+await seqInstance.query(
+  `SELECT username FROM users WHERE username = $1 AND password = $2`,
+  { bind: [username, password] }
+);
+
+await seqInstance.query(
+  `SELECT username FROM users WHERE username = $username AND password = $password`,
+  { bind: { username, password } }
+);
