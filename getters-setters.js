@@ -81,8 +81,31 @@ const User = seqInstance.define(
         }
       },
     },
+    // Paranoid table
+    // for paranoid tables we have to set timestamps: true
+    // all records will have a createdAt, updatedAt and a deletedAt timstamp in the table
+    paranoid: true,
+    // change the column name
+    deletedAt: "timeDestroyed",
   }
 );
+
+// SOFT DELETION
+User.destroy({
+  where: { user_id: 27 },
+  // with the force flag we can perform hard deletion on a paranoid table
+  force: true,
+});
+
+// soft deletion can be restored
+User.restore({
+  where: { user_id: 27 },
+});
+
+// Sequelize query by default will ignore soft deleted records
+// but we can tell sequelize to retreive soft deleted records as well
+// Using raw SQL queryies in sequelize we have to handle soft deleted records manually otherwise they will be returned always
+User.findOne({ paranoid: false });
 
 // Validate function can be called at this level before we try to save the data into the DB
 // const newUser = User.build({ name: 'Jozsef', email: 'joco.udv' });
