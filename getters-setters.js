@@ -42,9 +42,48 @@ const User = seqInstance.define(
         // return `${this.username} ${this.description}`
       },
     },
+    email: {
+      type: DataTypes.STRING,
+      // If a data is allowed to be null (by default all of them is), and we pass in a null value or something similar
+      // like undefined all the built in validators will be skiped but the custom validators will be run
+      allowNull: true,
+      validate: {
+        // this is a built in validator there are few more
+        // len: [4, 20],
+        // isEmail: true,
+
+        isNumeric: {
+          msg: "We can define custom error message here",
+        },
+
+        isIn: {
+          args: ["values we are checking against"],
+          msg: "error message",
+        },
+
+        // Custom validator function
+        // isOldEnough(value) {
+        //   if (value < 21) {
+        //     throw new Error("Too young");
+        //   }
+        // },
+      },
+    },
   },
   {
     freezeTableName: true,
     timestamps: false,
+    validate: {
+      // The context of the model is available so we can use this. and the prop name
+      usernamePassMatch() {
+        if (this.username === this.password) {
+          throw new Error("Username and password can't be the same");
+        }
+      },
+    },
   }
 );
+
+// Validate function can be called at this level before we try to save the data into the DB
+// const newUser = User.build({ name: 'Jozsef', email: 'joco.udv' });
+// newUser.validate();
