@@ -20,9 +20,9 @@ const User = seqInstance.define(
     username: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        len: [3, 5], // we can have validations in the model definition
-      },
+      // validate: {
+      //   len: [3, 5], // we can have validations in the model definition
+      // },
     },
     password: {
       type: DataTypes.STRING,
@@ -76,7 +76,7 @@ User.sync({ alter: true })
 
     // With user.create() we get additional method in the returned promise
     // that lets us to update the data and save it again to the DB
-    user.username = "Nora Sorban";
+    user.username = "Nori";
     // we can proved a list of fields we want to be updated other fields will be ignored by sequelize
     // even if it was changed
     // if we call the save method but there was no change sequelize will detect it and won't
@@ -87,6 +87,9 @@ User.sync({ alter: true })
   .then((user) => {
     console.log("Updated user!");
     console.log(user.toJSON());
+
+    // Its like using the toJSON() on the instance model
+    // User.findAll({ raw: true })
   })
   .catch((error) => {
     console.log(`User sync failed ${error}`);
